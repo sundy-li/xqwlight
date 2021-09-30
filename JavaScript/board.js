@@ -42,11 +42,13 @@ var PIECE_NAME = [
   "bk", "ba", "bb", "bn", "br", "bc", "bp", null,
 ];
 
-function SQ_X(sq) {
+function SQ_X(sq, reverse) {
+  var sq = reverse ? 254 - sq : sq;
   return SQUARE_LEFT + (FILE_X(sq) - 3) * SQUARE_SIZE;
 }
 
-function SQ_Y(sq) {
+function SQ_Y(sq, reverse) {
+  var sq = reverse ? 254 - sq : sq;
   return SQUARE_TOP + (RANK_Y(sq) - 3) * SQUARE_SIZE;
 }
 
@@ -61,12 +63,15 @@ function alertDelay(message) {
 }
 
 function Board(container, images, sounds) {
+  this.container = container;
   this.images = images;
   this.sounds = sounds;
+
   this.pos = new Position();
   this.pos.fromFen("rnbakabnr/9/1c5c1/p1p1p1p1p/9/9/P1P1P1P1P/1C5C1/9/RNBAKABNR w - - 0 1");
-  this.animated = true;
-  this.sound = true;
+  this.animated = false;
+  this.sound = false;
+  this.reverse = false;
   this.search = null;
   this.imgSquares = [];
   this.sqSelected = 0;
@@ -76,12 +81,20 @@ function Board(container, images, sounds) {
   this.result = RESULT_UNKNOWN;
   this.busy = false;
 
-  var style = container.style;
+  this.draw_boards();
+}
+
+
+Board.prototype.draw_boards = function() {
+  var style = this.container.style;
   style.position = "relative";
   style.width = BOARD_WIDTH + "px";
   style.height = BOARD_HEIGHT + "px";
-  style.background = "url(" + images + "board.jpg)";
+  style.background = "url(" + this.images + "board.jpg)";
   var this_ = this;
+
+  this.imgSquares = [];
+  this.container.innerHTML = "";
   for (var sq = 0; sq < 256; sq ++) {
     if (!IN_BOARD(sq)) {
       this.imgSquares.push(null);
@@ -90,8 +103,8 @@ function Board(container, images, sounds) {
     var img = document.createElement("img");
     var style = img.style;
     style.position = "absolute";
-    style.left = SQ_X(sq);
-    style.top = SQ_Y(sq);
+    style.left = SQ_X(sq,  this.reverse);
+    style.top = SQ_Y(sq,  this.reverse);
     style.width = SQUARE_SIZE;
     style.height = SQUARE_SIZE;
     style.zIndex = 0;
@@ -100,22 +113,22 @@ function Board(container, images, sounds) {
         this_.clickSquare(sq_);
       }
     } (sq);
-    container.appendChild(img);
+    this.container.appendChild(img);
     this.imgSquares.push(img);
   }
 
   this.thinking = document.createElement("img");
-  this.thinking.src = images + "thinking.gif";
+  this.thinking.src = this.images + "thinking.gif";
   style = this.thinking.style;
   style.visibility = "hidden";
   style.position = "absolute";
   style.left = THINKING_LEFT + "px";
   style.top = THINKING_TOP + "px";
-  container.appendChild(this.thinking);
+  this.container.appendChild(this.thinking);
 
   this.dummy = document.createElement("div");
   this.dummy.style.position = "absolute";
-  container.appendChild(this.dummy);
+  this.container.appendChild(this.dummy);
 
   this.flushBoard();
 }
@@ -163,11 +176,11 @@ Board.prototype.addMove = function(mv, computerMove) {
   }
 
   var sqSrc = this.flipped(SRC(mv));
-  var xSrc = SQ_X(sqSrc);
-  var ySrc = SQ_Y(sqSrc);
+  var xSrc = SQ_X(sqSrc, this.reverse);
+  var ySrc = SQ_Y(sqSrc, this.reverse);
   var sqDst = this.flipped(DST(mv));
-  var xDst = SQ_X(sqDst);
-  var yDst = SQ_Y(sqDst);
+  var xDst = SQ_X(sqDst, this.reverse);
+  var yDst = SQ_Y(sqDst, this.reverse);
   var style = this.imgSquares[sqSrc].style;
   style.zIndex = 256;
   var step = MAX_STEP - 1;
@@ -217,7 +230,7 @@ Board.prototype.postAddMove = function(mv, computerMove) {
     sqMate = this.flipped(sqMate);
     var style = this.imgSquares[sqMate].style;
     style.zIndex = 256;
-    var xMate = SQ_X(sqMate);
+    var xMate = SQ_X(sqMate, this.reverse);
     var step = MAX_STEP;
     var this_ = this;
     var timer = setInterval(function() {
@@ -242,15 +255,15 @@ Board.prototype.postAddMove = function(mv, computerMove) {
     if (vlRep > -WIN_VALUE && vlRep < WIN_VALUE) {
       this.playSound("draw");
       this.result = RESULT_DRAW;
-      alertDelay("Ë«·½²»±ä×÷ºÍ£¬ÐÁ¿àÁË£¡");
+      alertDelay("åŒæ–¹ä¸å˜ä½œå’Œï¼Œè¾›è‹¦äº†ï¼");
     } else if (computerMove == (vlRep < 0)) {
       this.playSound("loss");
       this.result = RESULT_LOSS;
-      alertDelay("³¤´ò×÷¸º£¬Çë²»ÒªÆøÄÙ£¡");
+      alertDelay("é•¿æ‰“ä½œè´Ÿï¼Œè¯·ä¸è¦æ°”é¦ï¼");
     } else {
       this.playSound("win");
       this.result = RESULT_WIN;
-      alertDelay("³¤´ò×÷¸º£¬×£ºØÄãÈ¡µÃÊ¤Àû£¡");
+      alertDelay("é•¿æ‰“ä½œè´Ÿï¼Œç¥è´ºä½ å–å¾—èƒœåˆ©ï¼");
     }
     this.postAddMove2();
     this.busy = false;
@@ -268,7 +281,7 @@ Board.prototype.postAddMove = function(mv, computerMove) {
     if (!hasMaterial) {
       this.playSound("draw");
       this.result = RESULT_DRAW;
-      alertDelay("Ë«·½¶¼Ã»ÓÐ½ø¹¥Æå×ÓÁË£¬ÐÁ¿àÁË£¡");
+      alertDelay("åŒæ–¹éƒ½æ²¡æœ‰è¿›æ”»æ£‹å­äº†ï¼Œè¾›è‹¦äº†ï¼");
       this.postAddMove2();
       this.busy = false;
       return;
@@ -284,7 +297,7 @@ Board.prototype.postAddMove = function(mv, computerMove) {
     if (!captured) {
       this.playSound("draw");
       this.result = RESULT_DRAW;
-      alertDelay("³¬¹ý×ÔÈ»ÏÞ×Å×÷ºÍ£¬ÐÁ¿àÁË£¡");
+      alertDelay("è¶…è¿‡è‡ªç„¶é™ç€ä½œå’Œï¼Œè¾›è‹¦äº†ï¼");
       this.postAddMove2();
       this.busy = false;
       return;
@@ -310,7 +323,7 @@ Board.prototype.postAddMove2 = function() {
 }
 
 Board.prototype.postMate = function(computerMove) {
-  alertDelay(computerMove ? "ÇëÔÙ½ÓÔÙÀ÷£¡" : "×£ºØÄãÈ¡µÃÊ¤Àû£¡");
+  alertDelay(computerMove ? "è¯·å†æŽ¥å†åŽ‰ï¼" : "ç¥è´ºä½ å–å¾—èƒœåˆ©ï¼");
   this.postAddMove2();
   this.busy = false;
 }
@@ -351,7 +364,7 @@ Board.prototype.clickSquare = function(sq_) {
   }
 }
 
-Board.prototype.drawSquare = function(sq, selected) {
+Board.prototype.drawSquare = function (sq, selected) {
   var img = this.imgSquares[this.flipped(sq)];
   img.src = this.images + PIECE_NAME[this.pos.squares[sq]] + ".gif";
   img.style.backgroundImage = selected ? "url(" + this.images + "oos.gif)" : "";
@@ -372,6 +385,19 @@ Board.prototype.restart = function(fen) {
   }
   this.result = RESULT_UNKNOWN;
   this.pos.fromFen(fen);
+
+  this.flushBoard();
+  this.playSound("newgame");
+  this.response();
+}
+
+
+Board.prototype.reactive = function() {
+  if (this.busy) {
+    return;
+  }
+  this.result = RESULT_UNKNOWN;
+
   this.flushBoard();
   this.playSound("newgame");
   this.response();
@@ -397,4 +423,10 @@ Board.prototype.setSound = function(sound) {
   if (sound) {
     this.playSound("click");
   }
+}
+
+
+Board.prototype.setReverse = function(reverse) {
+  this.reverse = reverse;
+  this.draw_boards()
 }

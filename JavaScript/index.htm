@@ -1,13 +1,13 @@
 <html>
   <head>
-    <meta http-equiv="Content-Type" content="text/html; charset=gbk">
-    <title>ÏóÆåĞ¡Î×Ê¦</title>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf8">
+    <title>è±¡æ£‹å°å·«å¸ˆ</title>
     <script type="text/javascript" src="book.js"></script>
     <script type="text/javascript" src="position.js"></script>
     <script type="text/javascript" src="search.js"></script>
     <script type="text/javascript" src="board.js"></script>
     <script type="text/javascript" src="cchess.js"></script>
-    <style type="text/css"><!--
+    <style type="text/css">
 body {
   background: url(../background.gif);
 }
@@ -40,48 +40,51 @@ label {
   font-size: 14px;
 }
 
-    --></style>
+    </style>
   </head>
   <body>
-    <div style="text-align:center;font-size:28px;font-family:ºÚÌå">ÏóÆåĞ¡Î×Ê¦</div>
+    <div style="text-align:center;font-size:28px;font-family:é»‘ä½“">è±¡æ£‹å°å·«å¸ˆ</div>
     <div style="height:16px"></div>
     <div style="text-align:center;white-space:nowrap">
       <span class="td" style="margin-right:10px">
         <div id="container"></div>
       </span><span class="td" style="vertical-align:top;width:120px;"><div style="text-align:left">
-        <div class="label">Ë­ÏÈ×ß</div>
+        <div class="label">è°å…ˆèµ°</div>
         <div><select id="selMoveMode" size="3">
-          <option selected value="0">ÎÒÏÈ×ß</option>
-          <option value="1">µçÄÔÏÈ×ß</option>
-          <option value="2">²»ÓÃµçÄÔ</option>
+          <option selected value="0">äººç±»å…ˆèµ°</option>
+          <option value="1">AIå…ˆèµ°</option>
+          <option value="2">ä¸ç”¨ç”µè„‘</option>
         </select></div>
-        <div class="label">ÏÈ×ßÈÃ×Ó</div>
+        <div class="label">å…ˆèµ°è®©å­</div>
         <div><select id="selHandicap" style="padding:0px">
-          <option selected value="0">²»ÈÃ×Ó</option>
-          <option value="1">ÈÃ×óÂí</option>
-          <option value="2">ÈÃË«Âí</option>
-          <option value="3">ÈÃ¾Å×Ó</option>
+          <option selected value="0">ä¸è®©å­</option>
+          <option value="1">è®©å·¦é©¬</option>
+          <option value="2">è®©åŒé©¬</option>
+          <option value="3">è®©ä¹å­</option>
         </select></div>
-        <div style="padding-top:2px"><input type="button" class="button" value="ÖØĞÂ¿ªÊ¼" onclick="restart_click()"></div>
-        <div style="padding-top:2px"><input type="button" class="button" value="»ÚÆå" onclick="retract_click()"></div>
+        <div style="padding-top:2px"><input type="button" class="button" value="é‡æ–°å¼€å§‹" onclick="restart_click()"></div>
+        <div style="padding-top:2px"><input type="button" class="button" value="ä»å½“å‰å±€é¢å¼€å§‹" onclick="restart_current()"></div>
+        <div style="padding-top:2px"><input type="button" class="button" value="æ‚”æ£‹" onclick="retract_click()"></div>
         <div style="height:12px"></div>
-        <div class="label">µçÄÔË®Æ½</div>
+        <div><input type="checkbox" class="checkbox"  onclick="board.setReverse(checked)"><label>ç¿»è½¬æ£‹ç›˜</label></input></div>
+
+        <div class="label">ç”µè„‘æ°´å¹³</div>
         <div><select id="selLevel" size="3" onchange="level_change()">
-          <option selected value="0">ÈëÃÅ</option>
-          <option value="1">ÒµÓà</option>
-          <option value="2">×¨Òµ</option>
+          <option value="0">å…¥é—¨</option>
+          <option value="1">ä¸šä½™</option>
+          <option selected value="2">ä¸“ä¸š</option>
         </select></div>
         <div style="height:12px"></div>
-        <div><input type="checkbox" class="checkbox" id="chkAnimated" checked onclick="board.animated = checked"><label for="chkAnimated">¶¯»­</label></input></div>
-        <div><input type="checkbox" class="checkbox" checked onclick="board.setSound(checked)"><label for="chkSound">ÒôĞ§</label></input></div>
+        <div><input type="checkbox" class="checkbox" id="chkAnimated"  onclick="board.animated = checked"><label for="chkAnimated">åŠ¨ç”»</label></input></div>
+        <div><input type="checkbox" class="checkbox"  onclick="board.setSound(checked)"><label for="chkSound">éŸ³æ•ˆ</label></input></div>
         <div style="height:60px"></div>
-        <div class="label">²½Öè</div>
-        <div><select id="selMoveList" size="10" style="font-family:ËÎÌå" onchange="moveList_change()">
-          <option selected value="0">=== ¿ªÊ¼ ===</option>
+        <div class="label">æ­¥éª¤</div>
+        <div><select id="selMoveList" size="10" style="font-family:å®‹ä½“" onchange="moveList_change()">
+          <option selected value="0">=== å¼€å§‹ ===</option>
         </select></div>
       </div></span>
     </div>
-    <script type="text/javascript"><!--
+    <script type="text/javascript">
 "use strict";
 
 var STARTUP_FEN = [
@@ -105,7 +108,7 @@ function createOption(text, value, ie8) {
 
 var board = new Board(container, "images/", "sounds/");
 board.setSearch(16);
-board.millis = 10;
+board.millis = 1000;
 board.computer = 1;
 board.onAddMove = function() {
   var counter = (board.pos.mvList.length >> 1);
@@ -122,7 +125,7 @@ board.onAddMove = function() {
 };
 
 function level_change() {
-  board.millis = Math.pow(10, selLevel.selectedIndex + 1);
+  board.millis = 1000 +  Math.pow(10, selLevel.selectedIndex + 1);
 }
 
 function restart_click() {
@@ -131,6 +134,12 @@ function restart_click() {
   board.computer = 1 - selMoveMode.selectedIndex;
   board.restart(STARTUP_FEN[selHandicap.selectedIndex]);
 }
+
+function restart_current() {
+  board.computer = 1 - selMoveMode.selectedIndex;
+  board.reactive();
+}
+
 
 function retract_click() {
   for (var i = board.pos.mvList.length; i < selMoveList.options.length; i ++) {
@@ -162,6 +171,6 @@ function moveList_change() {
   }
   board.flushBoard();
 }
-    --></script>
+    </script>
   </body>
 </html>

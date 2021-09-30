@@ -383,6 +383,7 @@ function SAME_FILE(sqSrc, sqDst) {
 
 function SIDE_TAG(sd) {
   return 8 + (sd << 3);
+
 }
 
 function OPP_SIDE_TAG(sd) {
